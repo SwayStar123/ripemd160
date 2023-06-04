@@ -1,5 +1,8 @@
 use fuels::prelude::*;
 
+use crypto::digest::Digest;
+use ripemd::Ripemd160;
+
 abigen!(Contract(
     name = "RipeMD160",
     abi = "out/debug/ripemd160-abi.json",
@@ -28,25 +31,14 @@ pub async fn setup() -> RipeMD160<WalletUnlocked> {
 async fn u8s_to_u32() {
     let instance = setup().await;
 
-    let bytes: [u8; 4] = [1, 2, 3, 4];
+    let input: &[u8] = b"Hello, world!";
 
-    // combine into a u32
-    let x = u32::from_le_bytes(bytes);
+    let result = instance.methods().ripemd160(bytes).call().await.unwrap().value;
 
-    let result = instance.methods().u8s_to_u32(bytes).call().await.unwrap().value;
+    // Compute using `rust-crypto`
+    let mut hasher = Ripemd160::new();
+    hasher.update(input);
+    let expected_result = hasher.finalize();
 
-    assert_eq!(result, x);
-}
-
-#[tokio::test]
-async fn u32_to_u8s() {
-    let instance = setup().await;
-
-    let x: u32 = 0x04030201;
-
-    let bytes: [u8; 4] = x.to_le_bytes();
-
-    let result = instance.methods().u32_to_u8s(x).call().await.unwrap().value;
-
-    assert_eq!(result, bytes);
+    assert_eq!(result, expected_result);
 }
