@@ -75,18 +75,24 @@ fn rmd160_update(ref mut ctx: RMDContext, input: Bytes) {
     }
 }
 
+fn padding_bytes() -> Bytes {
+    let mut padding = Bytes::new();
+    padding.push(0x80);
+    let mut i = 0;
+    while i < 63 {
+        padding.push(0);
+        i += 1;
+    }
+    padding
+}
+
 fn rmd160_final(ref mut ctx: RMDContext) -> [u8; 20] {
     let size = u64_into_bytes(ctx.count);
     let mut padlen = 64 - ((ctx.count / 8) % 64);
     if padlen < 1 + 8 {
         padlen += 64;
     }
-    let mut padding = Bytes::from(0x8000000000000000000000000000000000000000000000000000000000000000);
-    let mut i = 0;
-    while i < 32 {
-        padding.push(0);
-        i += 1;
-    }
+    let padding = padding_bytes();
     let (left, _) = padding.split_at(padlen - 8);
 
     rmd160_update(ctx, left);

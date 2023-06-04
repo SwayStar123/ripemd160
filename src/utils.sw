@@ -167,8 +167,7 @@ pub fn rf1(
     rj: u64,
     x: [u32; 16],
 ) -> (u32, u32) {
-    let a = rol(sj, a + f1(b, c, d) + x[rj] 
-+ kj) + e;
+    let a = rol(sj, a + f1(b, c, d) + x[rj] + kj) + e;
 
     let c = rol(10, c);
     (a, c)
