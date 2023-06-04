@@ -15,4 +15,3 @@ impl MyContract for Contract {
         ripemd160(bytes)
     }
 }
-
