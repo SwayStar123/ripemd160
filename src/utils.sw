@@ -2,6 +2,18 @@ library;
 
 use std::bytes::Bytes;
 
+impl u32 {
+    pub fn wrapping_add(self, other: u32) -> u32 {
+        // (self + other) % TTM 
+        asm(se: self, other: other, ttm: 4294967296, r1) {
+            add r1 se other;
+            mod r1 r1 ttm;
+            r1: u32
+        }
+    }
+}
+
+
 // Converts a u8 to equal value u32
 pub fn u8_4_to_u32(bytes: [u8; 4]) -> u32 {
     let i = 8;
@@ -132,13 +144,6 @@ fn f4(x: u32, y: u32, z: u32) -> u32 {
     x ^ (y | !z)
 }
 
-// let a = rol(
-//     sj,
-//     a.wrapping_add(f0(b, c, d))
-//         .wrapping_add(x[rj])
-//         .wrapping_add(kj),
-// ).wrapping_add(e);
-///
 pub fn rf0(
     a: u32,
     b: u32,
@@ -150,7 +155,13 @@ pub fn rf0(
     rj: u64,
     x: [u32; 16],
 ) -> (u32, u32) {
-    let a = rol(sj, a + f0(b, c, d) + x[rj] + kj) + e;
+    let a = rol(
+        sj,
+        a.wrapping_add(f0(b, c, d))
+            .wrapping_add(x[rj])
+            .wrapping_add(kj),
+    ).wrapping_add(e);
+    
 
     let c = rol(10, c);
     (a, c)
@@ -167,7 +178,12 @@ pub fn rf1(
     rj: u64,
     x: [u32; 16],
 ) -> (u32, u32) {
-    let a = rol(sj, a + f1(b, c, d) + x[rj] + kj) + e;
+    let a = rol(
+        sj,
+        a.wrapping_add(f1(b, c, d))
+            .wrapping_add(x[rj])
+            .wrapping_add(kj),
+    ).wrapping_add(e);
 
     let c = rol(10, c);
     (a, c)
@@ -184,7 +200,12 @@ pub fn rf2(
     rj: u64,
     x: [u32; 16],
 ) -> (u32, u32) {
-    let a = rol(sj, a + f2(b, c, d) + x[rj] + kj) + e;
+    let a = rol(
+        sj,
+        a.wrapping_add(f2(b, c, d))
+            .wrapping_add(x[rj])
+            .wrapping_add(kj),
+    ).wrapping_add(e);
 
     let c = rol(10, c);
     (a, c)
@@ -201,7 +222,12 @@ pub fn rf3(
     rj: u64,
     x: [u32; 16],
 ) -> (u32, u32) {
-    let a = rol(sj, a + f3(b, c, d) + x[rj] + kj) + e;
+    let a = rol(
+        sj,
+        a.wrapping_add(f3(b, c, d))
+            .wrapping_add(x[rj])
+            .wrapping_add(kj),
+    ).wrapping_add(e);
 
     let c = rol(10, c);
     (a, c)
@@ -218,7 +244,12 @@ pub fn rf4(
     rj: u64,
     x: [u32; 16],
 ) -> (u32, u32) {
-    let a = rol(sj, a + f4(b, c, d) + x[rj] + kj) + e;
+    let a = rol(
+        sj,
+        a.wrapping_add(f4(b, c, d))
+            .wrapping_add(x[rj])
+            .wrapping_add(kj),
+    ).wrapping_add(e);
 
     let c = rol(10, c);
     (a, c)
@@ -282,4 +313,13 @@ fn test_rf0_with_asm() {
 
     assert(res.0 == 2693);
     assert(res.1 == 3072);
+}
+
+#[test]
+fn test_wrapping_add() {
+    let a: u32 = 0xFFFFFFFF;
+    let b: u32 = 1;
+    let c: u32 = a.wrapping_add(b);
+    log(c);
+    assert(c == 0);
 }

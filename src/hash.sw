@@ -130,7 +130,7 @@ fn rmd160_transform(ref mut state: [u32; 5], block: Bytes) {
     let mut d = state[3];
     let mut e = state[4];
 
-    disable_panic_on_overflow();
+    // disable_panic_on_overflow();
 
     /* Round 1 */
     let (a, c) = rf0(a, b, c, d, e, K0, 11,  0, x);
@@ -320,14 +320,14 @@ fn rmd160_transform(ref mut state: [u32; 5], block: Bytes) {
     let (c, e) = rf0(c, d, e, a, b, KK4, 11,  9, x);
     let (b, d) = rf0(b, c, d, e, a, KK4, 11, 11, x); /* #79 */
 
-    let t = state[1] + (cc) + (d);
-    state[1] = state[2] + (dd) + (e);
-    state[2] = state[3] + (ee) + (a);
-    state[3] = state[4] + (aa) +(b);
-    state[4] = state[0] + (bb) +(c);
+    let t = state[1].wrapping_add(cc).wrapping_add(d);
+    state[1] = state[2].wrapping_add(dd).wrapping_add(e);
+    state[2] = state[3].wrapping_add(ee).wrapping_add(a);
+    state[3] = state[4].wrapping_add(aa).wrapping_add(b);
+    state[4] = state[0].wrapping_add(bb).wrapping_add(c);
     state[0] = t;
 
-    enable_panic_on_overflow();
+    // enable_panic_on_overflow();
 }
 
 #[test]
@@ -342,11 +342,11 @@ fn test_hash() {
     }
 
     let output = ripemd160(input_bytes);
-    log(output[0]);
+    log(output[2]);
     
 
     let expected = [88, 38, 45, 31, 189, 190, 69, 48, 216, 134, 93, 53, 24, 198, 214, 228, 16, 2, 97, 15];
-    log(expected[0]);
+    log(expected[2]);
 
     i = 0;
     while i < 20 {
