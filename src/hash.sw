@@ -332,7 +332,7 @@ fn rmd160_transform(ref mut state: [u32; 5], block: Bytes) {
 
 #[test]
 fn test_hash() {
-    let input = [72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33]; // b"Hello world!"
+    let input = [72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33]; // b"Hello, world!"
     let mut input_bytes = Bytes::new();
 
     let mut i = 0;
