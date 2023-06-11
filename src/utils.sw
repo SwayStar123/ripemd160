@@ -4,7 +4,6 @@ use std::bytes::Bytes;
 
 impl u32 {
     pub fn wrapping_add(self, other: u32) -> u32 {
-        // (self + other) % TTM 
         asm(se: self, other: other, ttm: 4294967296, r1) {
             add r1 se other;
             mod r1 r1 ttm;
@@ -16,11 +15,7 @@ impl u32 {
 
 // Converts a u8 to equal value u32
 pub fn u8_4_to_u32(bytes: [u8; 4]) -> u32 {
-    let i = 8;
-    let j = 16;
-    let k = 24;
-
-    asm(a: bytes[0], b: bytes[1], c: bytes[2], d: bytes[3], i: i, j: j, k: k, r1, r2, r3) {
+    asm(a: bytes[0], b: bytes[1], c: bytes[2], d: bytes[3], i: 8, j: 16, k: 24, r1, r2, r3) {
         sll  r1 c j;
         sll  r2 d k;
         or   r3 r1 r2;
@@ -32,14 +27,9 @@ pub fn u8_4_to_u32(bytes: [u8; 4]) -> u32 {
 }
 
 pub fn u32_to_u8s(input: u32) -> [u8; 4] {
-    let off = 0xFF;
-    let i = 8;
-    let j = 16;
-    let k = 24;
+    let output = [0; 4];
 
-    let output = [0_u8, 0_u8, 0_u8, 0_u8];
-
-    asm(input: input, off: off, i: i, j: j, k: k, output: output, r1, r2, r3, r4) {
+    asm(input: input, off: 0xFF, i: 8, j: 16, k: 24, output: output, r1, r2, r3, r4) {
         and  r1 input off;
         srl  r2 input i;
         and  r2 r2 off;
@@ -58,48 +48,45 @@ pub fn u32_to_u8s(input: u32) -> [u8; 4] {
 }
 
 pub fn u64_into_bytes(input: u64) -> Bytes {
-    let off = 0xFF;
-    let i = 8;
-    let j = 16;
-    let k = 24;
-    let l = 32;
-    let m = 40;
-    let n = 48;
-    let o = 56;
+    let output = [0; 8];
 
-    let output = [0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8, 0_u8];
-
-    let output = asm(input: input, off: off, i: i, j: j, k: k, l: l, m: m, n: n, o: o, output: output, r1, r2, r3, r4, r5, r6, r7, r8) {
+    let output = asm(input: input, off: 0xFF, i: 0x8, j: 0x10, k: 0x18, l: 0x20, m: 0x28, n: 0x30, o: 0x38, output: output, r1) {
         and  r1 input off;
-        srl  r2 input i;
-        and  r2 r2 off;
-        srl  r3 input j;
-        and  r3 r3 off;
-        srl  r4 input k;
-        and  r4 r4 off;
-        srl  r5 input l;
-        and  r5 r5 off;
-        srl  r6 input m;
-        and  r6 r6 off;
-        srl  r7 input n;
-        and  r7 r7 off;
-        srl  r8 input o;
-        and  r8 r8 off;
+        sw  output r1 i0;
 
-        sw   output r1 i0;
-        sw   output r2 i1;
-        sw   output r3 i2;
-        sw   output r4 i3;
-        sw   output r5 i4;
-        sw   output r6 i5;
-        sw   output r7 i6;
-        sw   output r8 i7;
+        srl  r1 input i;
+        and  r1 r1 off;
+        sw  output r1 i1;
+
+        srl  r1 input j;
+        and  r1 r1 off;
+        sw  output r1 i2;
+
+        srl  r1 input k;
+        and  r1 r1 off;
+        sw  output r1 i3;
+
+        srl  r1 input l;
+        and  r1 r1 off;
+        sw  output r1 i4;
+
+        srl  r1 input m;
+        and  r1 r1 off;
+        sw  output r1 i5;
+
+        srl  r1 input n;
+        and  r1 r1 off;
+        sw  output r1 i6;
+
+        srl  r1 input o;
+        and  r1 r1 off;
+        sw  output r1 i7;
 
         output: [u8; 8]
     };
 
     let mut i = 0;
-    let mut output_bytes = Bytes::new();
+    let mut output_bytes = Bytes::with_capacity(8);
     while i < 8 {
         output_bytes.push(output[i]);
         i += 1;
@@ -109,7 +96,7 @@ pub fn u64_into_bytes(input: u64) -> Bytes {
 }
 
 pub fn u8_64_into_bytes(input: [u8; 64]) -> Bytes {
-    let mut output = Bytes::new();
+    let mut output = Bytes::with_capacity(64);
 
     let mut i = 0;
     while i < 64 {
