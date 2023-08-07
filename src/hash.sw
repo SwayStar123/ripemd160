@@ -59,9 +59,9 @@ fn rmd160_update(ref mut ctx: RMDContext, input: Bytes) {
             have = 0;
         }
         while off + 64 <= inplen {
-            let (_, right) = input.split_at(off);
+            let (_, inpblock) = input.split_at(off);
             let mut state = ctx.state;
-            rmd160_transform(state, right);
+            rmd160_transform(state, inpblock);
             ctx.state = state;
             off += 64;
         }
@@ -72,6 +72,8 @@ fn rmd160_update(ref mut ctx: RMDContext, input: Bytes) {
             ctx.buffer[(have + i)] = input.get((off + i)).unwrap();
             i += 1;
         }
+            log(123);
+
     }
 }
 
@@ -111,7 +113,13 @@ fn rmd160_final(ref mut ctx: RMDContext) -> [u8; 20] {
 }
 
 fn rmd160_transform(ref mut state: [u32; 5], block: Bytes) {
-    assert(block.len() == 64);
+    // assert(block.len() == 64);
+    let block = if block.len() > 64 {
+        let (left, _) = block.split_at(64);
+        left
+    } else {
+        block
+    };
 
     let mut x = [0u32; 16];
     let mut i = 0;

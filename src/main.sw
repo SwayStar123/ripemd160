@@ -2,6 +2,7 @@ contract;
 
 mod utils;
 mod hash;
+mod standard_test_vectors;
 
 use hash::ripemd160;
 use std::bytes::Bytes;
