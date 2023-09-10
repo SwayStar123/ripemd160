@@ -52,17 +52,13 @@ fn rmd160_update(ref mut ctx: RMDContext, input: Bytes) {
                 ctx.buffer[(have + i)] = input.get(i).unwrap();
                 i += 1;
             }
-            let mut state = ctx.state;
-            rmd160_transform(state, u8_64_into_bytes(ctx.buffer));
-            ctx.state = state;
+            ctx.state = rmd160_transform(ctx.state, u8_64_into_bytes(ctx.buffer));
             off = need;
             have = 0;
         }
         while off + 64 <= inplen {
             let (_, inpblock) = input.split_at(off);
-            let mut state = ctx.state;
-            rmd160_transform(state, inpblock);
-            ctx.state = state;
+            ctx.state = rmd160_transform(ctx.state, inpblock);
             off += 64;
         }
     }
@@ -72,8 +68,6 @@ fn rmd160_update(ref mut ctx: RMDContext, input: Bytes) {
             ctx.buffer[(have + i)] = input.get((off + i)).unwrap();
             i += 1;
         }
-            log(123);
-
     }
 }
 
@@ -112,7 +106,7 @@ fn rmd160_final(ref mut ctx: RMDContext) -> [u8; 20] {
     result
 }
 
-fn rmd160_transform(ref mut state: [u32; 5], block: Bytes) {
+fn rmd160_transform(state: [u32; 5], block: Bytes) -> [u32; 5] {
     // assert(block.len() == 64);
     let block = if block.len() > 64 {
         let (left, _) = block.split_at(64);
@@ -137,8 +131,6 @@ fn rmd160_transform(ref mut state: [u32; 5], block: Bytes) {
     let mut c = state[2];
     let mut d = state[3];
     let mut e = state[4];
-
-    // disable_panic_on_overflow();
 
     /* Round 1 */
     let (a, c) = rf0(a, b, c, d, e, K0, 11,  0, x);
@@ -328,37 +320,12 @@ fn rmd160_transform(ref mut state: [u32; 5], block: Bytes) {
     let (c, e) = rf0(c, d, e, a, b, KK4, 11,  9, x);
     let (b, d) = rf0(b, c, d, e, a, KK4, 11, 11, x); /* #79 */
 
-    let t = state[1].wrapping_add(cc).wrapping_add(d);
-    state[1] = state[2].wrapping_add(dd).wrapping_add(e);
-    state[2] = state[3].wrapping_add(ee).wrapping_add(a);
-    state[3] = state[4].wrapping_add(aa).wrapping_add(b);
-    state[4] = state[0].wrapping_add(bb).wrapping_add(c);
-    state[0] = t;
+    let mut output_state = [0_u32; 5];
+    output_state[1] = state[2].wrapping_add(dd).wrapping_add(e);
+    output_state[2] = state[3].wrapping_add(ee).wrapping_add(a);
+    output_state[3] = state[4].wrapping_add(aa).wrapping_add(b);
+    output_state[4] = state[0].wrapping_add(bb).wrapping_add(c);
+    output_state[0] = state[1].wrapping_add(cc).wrapping_add(d);
 
-    // enable_panic_on_overflow();
-}
-
-#[test]
-fn test_hash() {
-    let input = [72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100, 33]; // b"Hello, world!"
-    let mut input_bytes = Bytes::with_capacity(14);
-
-    let mut i = 0;
-    while i < 13 {
-        input_bytes.push(input[i]);
-        i += 1;
-    }
-
-    let output = ripemd160(input_bytes);
-    // log(output[2]);
-    
-
-    // let expected = [88, 38, 45, 31, 189, 190, 69, 48, 216, 134, 93, 53, 24, 198, 214, 228, 16, 2, 97, 15];
-    // log(expected[2]);
-
-    // i = 0;
-    // while i < 20 {
-    //     assert(output[i] == expected[i]);
-    //     i += 1;
-    // }
+    output_state
 }
