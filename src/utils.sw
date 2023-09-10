@@ -108,7 +108,7 @@ pub fn u8_64_into_bytes(input: [u8; 64]) -> Bytes {
 }
 
 fn rol(n: u32, x: u32) -> u32 {
-    (x << n) | (x >> (32 - n))
+    (x << n.as_u64()) | (x >> (32 - n.as_u64()))
 }
 
 fn f0(x: u32, y: u32, z: u32) -> u32 {

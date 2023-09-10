@@ -25,5 +25,6 @@ fn one_million_times_a() {
     i = 0;
     while i < 20 {
         assert(hash[i] == expected[i]);
+        i+=1;
     }
 }
